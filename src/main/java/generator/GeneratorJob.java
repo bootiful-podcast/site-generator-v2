@@ -159,11 +159,10 @@ public class GeneratorJob {
 				return;
 			}
 
-			for (var f : new File[] { properties.getOutput().getPages(), properties.getOutput().getItems() })
-				FileUtils.delete(f);
-
-			log.info("GIT:: " + this.gitProperties.getHttp().getUsername() + ':'
-					+ this.gitProperties.getHttp().getPassword());
+			/*
+			 * for (var f : new File[] { properties.getOutput().getPages(),
+			 * properties.getOutput().getItems() }) FileUtils.delete(f);
+			 */
 
 			var dateFormat = DateUtils.date();
 			log.info("starting the site generation @ " + dateFormat.format(new Date()));
