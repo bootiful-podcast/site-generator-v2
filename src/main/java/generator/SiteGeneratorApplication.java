@@ -51,7 +51,6 @@ public class SiteGeneratorApplication {
 		return IntegrationFlows //
 				.from(amqpInboundAdapter) //
 				.handle(String.class, (payload, headers) -> {
-
 					this.generatorJob.build();
 					return null;
 				})//
