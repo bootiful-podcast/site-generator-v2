@@ -47,9 +47,9 @@ mvn -f ${ROOT_DIR}/pom.xml -DskipTests=true clean spring-javaformat:apply spring
 image_id=$(docker images -q $APP_NAME)
 docker tag "${image_id}" gcr.io/${PROJECT_ID}/${APP_NAME}
 docker push gcr.io/${PROJECT_ID}/${APP_NAME}
-
-kubectl delete secrets ${SECRETS} || echo "could not delete ${SECRETS}."
 kubectl delete -f $APP_YAML || echo "could not delete the existing Kubernetes environment as described in ${APP_YAML}."
+kubectl delete secrets ${SECRETS} || echo "could not delete ${SECRETS}."
+
 kubectl apply -f <(echo "
 ---
 apiVersion: v1

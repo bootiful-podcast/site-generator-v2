@@ -2,6 +2,7 @@ package generator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.joshlong.git.GitProperties;
 import com.joshlong.git.GitTemplate;
 import com.joshlong.templates.MarkdownService;
 import com.joshlong.templates.MustacheService;
@@ -14,7 +15,6 @@ import org.springframework.core.NestedExceptionUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -66,10 +66,16 @@ public class GeneratorJob {
 			.comparing((Function<PodcastRecord, Date>) podcastRecord -> podcastRecord.getPodcast().getDate())
 			.reversed();
 
-	GeneratorJob(JdbcTemplate template, MarkdownService markdownService, Environment env, ObjectMapper om,
-			PodcastRowMapper podcastRowMapper, SiteGeneratorProperties properties, MustacheService mustacheService,
-			GitTemplate gitTemplate, @Value("classpath:/static") Resource staticAssets) {
+	private final AtomicReference<String> token = new AtomicReference<>();
+
+	private final RestTemplate restTemplate;
+
+	GeneratorJob(GitProperties gp, JdbcTemplate template, MarkdownService markdownService, Environment env,
+			ObjectMapper om, PodcastRowMapper podcastRowMapper, SiteGeneratorProperties properties,
+			MustacheService mustacheService, GitTemplate gitTemplate,
+			@Value("classpath:/static") Resource staticAssets) {
 		this.template = template;
+		this.gitProperties = gp;
 		this.markdownService = markdownService;
 		this.objectMapper = om;
 		this.environment = env;
@@ -83,10 +89,6 @@ public class GeneratorJob {
 				.build();
 
 	}
-
-	private final AtomicReference<String> token = new AtomicReference<>();
-
-	private final RestTemplate restTemplate;
 
 	@SneakyThrows
 	private String getToken() {
@@ -104,6 +106,8 @@ public class GeneratorJob {
 
 		return this.token.get();
 	}
+
+	private final GitProperties gitProperties;
 
 	@SneakyThrows
 	private void downloadImageFor(PodcastRecord podcast) {
@@ -209,6 +213,8 @@ public class GeneratorJob {
 	}
 
 	private void commit() {
+		log.info("GIT:: " + this.gitProperties.getHttp().getUsername() + ':'
+				+ this.gitProperties.getHttp().getPassword());
 		Stream//
 				.of(this.environment.getActiveProfiles())//
 				.filter(p -> p.equalsIgnoreCase("cloud"))//
