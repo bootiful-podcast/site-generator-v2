@@ -157,6 +157,10 @@ public class GeneratorJob {
 				log.info(this.getClass().getName() + " is not enabled. Skipping...");
 				return;
 			}
+
+			log.info("GIT:: " + this.gitProperties.getHttp().getUsername() + ':'
+					+ this.gitProperties.getHttp().getPassword());
+
 			var dateFormat = DateUtils.date();
 			log.info("starting the site generation @ " + dateFormat.format(new Date()));
 			var gitClone = this.properties.getOutput().getGitClone();
@@ -213,8 +217,6 @@ public class GeneratorJob {
 	}
 
 	private void commit() {
-		log.info("GIT:: " + this.gitProperties.getHttp().getUsername() + ':'
-				+ this.gitProperties.getHttp().getPassword());
 		Stream//
 				.of(this.environment.getActiveProfiles())//
 				.filter(p -> p.equalsIgnoreCase("cloud"))//
