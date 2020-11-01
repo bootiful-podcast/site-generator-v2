@@ -1,4 +1,4 @@
-name: Site Generator
+name: build
 
 env:
   GKE_ZONE: ${{ secrets.GKE_ZONE }}
