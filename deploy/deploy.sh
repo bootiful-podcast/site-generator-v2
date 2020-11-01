@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-
-
-
 #
 #source "$(cd $(dirname $0) && pwd)/env.sh"
 #
@@ -16,14 +13,12 @@
 #cf set-env ${APP_NAME} PODCAST_RMQ_ADDRESS $PODCAST_RMQ_ADDRESS
 #cf start $APP_NAME
 
-
 BP_MODE=${1:-DEVELOPMENT}
 echo BP_MODE=${BP_MODE}
 
 if [ "$BP_MODE" = "DEVELOPMENT" ]; then
- echo "were using the development variables, not the production ones."
+  echo "were using the development variables, not the production ones."
 fi
-
 
 GIT_URI=https://github.com/bootiful-podcast/bootiful-podcast-dev.github.io.git
 
@@ -39,7 +34,7 @@ PSQL_PW=$(read_kubernetes_secret postgresql-secrets POSTGRES_PASSWORD)
 
 APP_NAME=site-generator
 PROJECT_ID=${GKE_PROJECT:-pgtm-jlong}
-ROOT_DIR=${GITHUB_WORKSPACE:-$(cd `dirname $1` && pwd)}
+ROOT_DIR=${GITHUB_WORKSPACE:-$(cd $(dirname $1) && pwd)}
 
 APP_YAML=${ROOT_DIR}/deploy/site-generator.yaml
 APP_SERVICE_YAML=${ROOT_DIR}/deploy/site-generator-service.yaml
@@ -49,7 +44,7 @@ SECRETS=${APP_NAME}-secrets
 image_id=$(docker images -q $APP_NAME)
 docker rmi -f $image_id || echo "there is not an existing image to delete..."
 mvn -f ${ROOT_DIR}/pom.xml -DskipTests=true clean spring-javaformat:apply spring-boot:build-image
-image_id=$(docker images -q $APP_NAME )
+image_id=$(docker images -q $APP_NAME)
 docker tag "${image_id}" gcr.io/${PROJECT_ID}/${APP_NAME}
 docker push gcr.io/${PROJECT_ID}/${APP_NAME}
 
@@ -70,9 +65,9 @@ stringData:
   SPRING_DATASOURCE_USERNAME: ${PSQL_USER}
   SPRING_DATASOURCE_PASSWORD: ${PSQL_PW}
   SPRING_DATASOURCE_URL:  jdbc:postgresql://postgres:5432/bp
-  GIT_URI: "${GIT_URI}"
-  GIT_USERNAME: "${GIT_USERNAME}"
-  GIT_PASSWORD: "${GIT_USERNAME}"
+  GIT_URI: ${GIT_URI}
+  GIT_USERNAME: ${GIT_USERNAME}
+  GIT_PASSWORD: ${GIT_USERNAME}
 ")
 
 kubectl apply -f $APP_YAML
