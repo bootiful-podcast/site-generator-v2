@@ -115,9 +115,7 @@ public class GeneratorJob {
 					+ imagesDirectory.getAbsolutePath() + "') does not exist and could not be created");
 			var profilePhotoUrl = new URI(this.properties.getApi().getUri() + "/podcasts/" + uid + "/profile-photo");
 			log.info("downloading the image from " + profilePhotoUrl);
-
-			ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(profilePhotoUrl, Resource.class);
-
+			var responseEntity = this.restTemplate.getForEntity(profilePhotoUrl, Resource.class);
 			try (var img = responseEntity.getBody().getInputStream()) {
 				this.copyInputStreamToImage(img, file);
 			}

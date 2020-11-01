@@ -56,7 +56,8 @@
     .search-nav { display: none; }
 
     .cover .caption h1 {
-        font-size: 4vh;
+       /* font-size:  3vh;
+        max-font-size: calc(72pt / 2 );*/
     }
 
     .topic-item { margin-bottom:25px; }

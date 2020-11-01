@@ -1,0 +1,55 @@
+name: Site Generator
+
+env:
+
+  SPRING_PROFILES_ACTIVE: ci
+
+  PODCAST_RMQ_ADDRESS: ${{ secrets.PODCAST_RMQ_ADDRESS }}
+
+  GIT_URI: ${{ secrets.GIT_URI }}
+  GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
+  GIT_PASSWORD: ${{ secrets.GIT_PASSWORD  }}
+
+  ARTIFACTORY_API_TOKEN_SECRET: ${{ secrets.ARTIFACTORY_API_TOKEN_SECRET }}
+  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME  }}
+  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD  }}
+
+  BP_API_PASSWORD: ${{ secrets.BP_API_PASSWORD }}
+  BP_API_USERNAME: ${{ secrets.BP_API_USERNAME }}
+
+
+
+on:
+  create:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Setup GCP environment
+        uses: GoogleCloudPlatform/github-actions@0.1.2
+
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+
+      - run: |-
+          gcloud --quiet auth configure-docker
+
+      - run: |-
+          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+
+      - name: Deploy Middleware
+        run: |
+          cd $GITHUB_WORKSPACE
+          echo "Deploying site-generator."
+          ./deploy.sh
