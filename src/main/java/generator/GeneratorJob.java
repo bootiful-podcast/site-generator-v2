@@ -9,24 +9,28 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.NestedExceptionUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,6 +78,31 @@ public class GeneratorJob {
 		this.properties = properties;
 		this.mustacheService = mustacheService;
 		this.gitTemplate = gitTemplate;
+		this.restTemplate = new RestTemplateBuilder()
+				.basicAuthentication(this.properties.getApi().getUsername(), this.properties.getApi().getPassword())
+				.build();
+
+	}
+
+	private final AtomicReference<String> token = new AtomicReference<>();
+
+	private final RestTemplate restTemplate;
+
+	@SneakyThrows
+	private String getToken() {
+
+		if (this.token.get() == null) {
+			var tokenUrl = this.properties.getApi().getUri() + "/token";
+			var responseEntity = restTemplate.postForEntity(tokenUrl, null, String.class);
+			Assert.state(responseEntity.getStatusCode().is2xxSuccessful(),
+					() -> String.format(
+							"the call to the API server (%s) with the username %s and password %s has failed",
+							this.properties.getApi().getUri().toString(), this.properties.getApi().getUsername(),
+							this.properties.getApi().getPassword()));
+			this.token.set(responseEntity.getBody());
+		}
+
+		return this.token.get();
 	}
 
 	@SneakyThrows
@@ -84,10 +113,14 @@ public class GeneratorJob {
 		try {
 			Assert.isTrue(imagesDirectory.mkdirs() || imagesDirectory.exists(), "the imagesDirectory ('"
 					+ imagesDirectory.getAbsolutePath() + "') does not exist and could not be created");
-			var profilePhotoUrl = new URL(
-					this.properties.getApiServerUrl().toString() + "/podcasts/" + uid + "/profile-photo");
-			log.info("downloading the image from " + profilePhotoUrl.toExternalForm());
-			this.copyInputStreamToImage(profilePhotoUrl.openStream(), file);
+			var profilePhotoUrl = new URI(this.properties.getApi().getUri() + "/podcasts/" + uid + "/profile-photo");
+			log.info("downloading the image from " + profilePhotoUrl);
+
+			ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(profilePhotoUrl, Resource.class);
+
+			try (var img = responseEntity.getBody().getInputStream()) {
+				this.copyInputStreamToImage(img, file);
+			}
 		}
 		catch (Exception e) {
 			// we can't get a photo for this podcast, so we need to provide a default one.
@@ -124,8 +157,12 @@ public class GeneratorJob {
 			}
 			var dateFormat = DateUtils.date();
 			log.info("starting the site generation @ " + dateFormat.format(new Date()));
-			Stream.of(Objects.requireNonNull(this.properties.getOutput().getGitClone()
-					.listFiles(pathname -> !pathname.getName().equals(".git")))).forEach(FileUtils::delete);
+			var gitClone = this.properties.getOutput().getGitClone();
+
+			var dotGitFilesInGitCloneDirectory = gitClone.listFiles(pathname -> !pathname.getName().equals(".git"));
+			if (dotGitFilesInGitCloneDirectory != null) {
+				Stream.of(dotGitFilesInGitCloneDirectory).forEach(FileUtils::delete);
+			}
 			Stream.of(this.properties.getOutput().getItems(), properties.getOutput().getPages()).forEach(this::reset);
 			var podcastList = this.template.query(this.properties.getSql().getLoadPodcasts(), this.podcastRowMapper);
 			var maxYear = podcastList.stream()//
@@ -194,18 +231,18 @@ public class GeneratorJob {
 	}
 
 	private JsonNode jsonNodeForPodcast(PodcastRecord pr) {
-		var objectNode = objectMapper.createObjectNode();
+		var objectNode = this.objectMapper.createObjectNode();
 		objectNode.put("id", Long.toString(pr.getPodcast().getId()));
 		objectNode.put("uid", pr.getPodcast().getUid());
 		objectNode.put("title", pr.getPodcast().getTitle());
 		objectNode.put("date", pr.getPodcast().getDate().getTime());
 		objectNode.put("episodePhotoUri", pr.getPodcast().getPodbeanPhotoUri());
-		objectNode.put("description", mapOfRenderedMarkdown.get(pr.getPodcast().getUid()));
+		objectNode.put("description", this.mapOfRenderedMarkdown.get(pr.getPodcast().getUid()));
 		objectNode.put("dateAndTime", pr.getDateAndTime()); // correct
 		objectNode.put("dataAndTime", pr.getDateAndTime()); // does anything else use this
 		// mistaken property?
 		objectNode.put("episodeUri",
-				this.properties.getApiServerUrl() + "/podcasts/" + pr.getPodcast().getUid() + "/produced-audio");
+				this.properties.getApi().getUri() + "/podcasts/" + pr.getPodcast().getUid() + "/produced-audio");
 		return objectNode;
 	}
 

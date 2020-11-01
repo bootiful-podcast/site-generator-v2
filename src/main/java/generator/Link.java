@@ -3,8 +3,8 @@ package generator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Data
+@RequiredArgsConstructor
 class Link {
 
 	private final Long id;

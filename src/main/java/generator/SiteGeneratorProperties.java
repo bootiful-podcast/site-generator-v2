@@ -15,10 +15,6 @@ public class SiteGeneratorProperties {
 
 	private boolean disabled;
 
-	// private String charset;
-
-	private URI apiServerUrl;
-
 	private final Sql sql = new Sql();
 
 	private final Templates templates = new Templates();
@@ -26,6 +22,19 @@ public class SiteGeneratorProperties {
 	private final Output output = new Output();
 
 	private final Launcher launcher = new Launcher();
+
+	private final Api api = new Api();
+
+	@Data
+	public static class Api {
+
+		private URI uri;
+
+		private String username;
+
+		private String password;
+
+	}
 
 	@Data
 	public static class Output {

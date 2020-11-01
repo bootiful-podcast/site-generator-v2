@@ -53,5 +53,5 @@ jobs:
       - name: Deploy to Cloud Foundry
         run: |
            cd $GITHUB_WORKSPACE
-           ./deploy/cf.sh
-           ./deploy/deploy.sh
+#           ./deploy/cf.sh
+#           ./deploy/deploy.sh

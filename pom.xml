@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.2.RELEASE</version>
+        <version>2.3.4.RELEASE</version>
         <relativePath/>
     </parent>
     <groupId>fm.bootifulpodcast</groupId>
@@ -138,7 +138,7 @@
                 <artifactId>artifactory-maven-plugin</artifactId>
                 <version>${artifactory-maven-plugin.version}</version>
                 <inherited>false</inherited>
-                <executions>
+                   <executions>
                     <execution>
                         <id>build-info</id>
                         <goals>
@@ -146,7 +146,8 @@
                         </goals>
                         <configuration>
                             <deployProperties>
-                                <build.vcsRevision>{{TRAVIS_COMMIT}}
+                                <build.vcsRevision>
+                                    {{GITHUB_SHA}}
                                 </build.vcsRevision>
                             </deployProperties>
                             <publisher>
@@ -160,14 +161,14 @@
                                 </snapshotRepoKey>
                             </publisher>
                             <buildInfo>
-                                <agentName>Travis CI</agentName>
-                                <buildNumber>{{TRAVIS_BUILD_NUMBER}}
+                                <agentName>Github Actions</agentName>
+                                <buildNumber>{{GITHUB_RUN_ID}}
                                 </buildNumber>
                                 <buildUrl>
-                                    http://travis-ci.org/{{TRAVIS_REPO_SLUG}}/builds/{{TRAVIS_BUILD_ID}}
+                                    http://travis-ci.org/{{GITHUB_REPOSITORY}}/builds/{{GITHUB_RUN_ID}}
                                 </buildUrl>
                                 <principal>{{USER}}</principal>
-                                <vcsRevision>{{TRAVIS_COMMIT}}</vcsRevision>
+                                <vcsRevision>{{GITHUB_SHA}}</vcsRevision>
                             </buildInfo>
                         </configuration>
                     </execution>
