@@ -39,7 +39,7 @@ public class SiteGeneratorProperties {
 	@Data
 	public static class Output {
 
-		private File items, pages, gitClone;
+		private File root, items, pages, gitClone;
 
 	}
 

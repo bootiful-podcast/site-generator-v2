@@ -16,6 +16,8 @@ import org.springframework.integration.amqp.dsl.Amqp;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 
+import java.io.File;
+
 /**
  * The job runs both when the application starts up <em>and</em> when requests come via
  * the RabbitMQ queue defined in
@@ -42,14 +44,13 @@ public class SiteGeneratorApplication {
 
 		log.info("installing a launch request handler integration flow...");
 
-		rabbitMqHelper.defineDestination(properties.getLauncher().getRequestsExchange(),
-				properties.getLauncher().getRequestsQueue(), properties.getLauncher().getRequestsRoutingKey());
 		var amqpInboundAdapter = Amqp //
 				.inboundAdapter(cf, properties.getLauncher().getRequestsQueue()) //
 				.get();
 		return IntegrationFlows //
 				.from(amqpInboundAdapter) //
 				.handle(String.class, (payload, headers) -> {
+
 					this.generatorJob.build();
 					return null;
 				})//

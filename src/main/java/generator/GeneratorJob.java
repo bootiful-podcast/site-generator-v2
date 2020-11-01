@@ -152,11 +152,15 @@ public class GeneratorJob {
 
 	@SneakyThrows
 	public void build() {
+
 		try {
 			if (this.properties.isDisabled()) {
 				log.info(this.getClass().getName() + " is not enabled. Skipping...");
 				return;
 			}
+
+			for (var f : new File[] { properties.getOutput().getPages(), properties.getOutput().getItems() })
+				FileUtils.delete(f);
 
 			log.info("GIT:: " + this.gitProperties.getHttp().getUsername() + ':'
 					+ this.gitProperties.getHttp().getPassword());
