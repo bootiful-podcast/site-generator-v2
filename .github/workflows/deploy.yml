@@ -1,6 +1,10 @@
 name: Site Generator
 
 env:
+  GKE_ZONE: ${{ secrets.GKE_ZONE }}
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+  GKE_PROJECT: ${{ secrets.GKE_PROJECT }}
+  GKE_SA_KEY: ${{ secrets.GKE_SA_KEY }}
 
   SPRING_PROFILES_ACTIVE: ci
 
@@ -16,6 +20,8 @@ env:
 
   BP_API_PASSWORD: ${{ secrets.BP_API_PASSWORD }}
   BP_API_USERNAME: ${{ secrets.BP_API_USERNAME }}
+
+
 
 
 
