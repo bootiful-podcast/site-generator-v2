@@ -58,4 +58,4 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           echo "Deploying site-generator."
-          ./deploy.sh
+          ./deploy/deploy.sh
