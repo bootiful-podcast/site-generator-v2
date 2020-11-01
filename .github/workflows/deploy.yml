@@ -54,7 +54,7 @@ jobs:
       - run: |-
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
-      - name: Deploy Middleware
+      - name: Deploy Site Generator
         run: |
           cd $GITHUB_WORKSPACE
           echo "Deploying site-generator."

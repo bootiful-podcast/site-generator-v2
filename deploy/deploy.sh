@@ -45,13 +45,13 @@ APP_YAML=${ROOT_DIR}/deploy/site-generator.yaml
 APP_SERVICE_YAML=${ROOT_DIR}/deploy/site-generator-service.yaml
 SECRETS=${APP_NAME}-secrets
 
-## TODO figure out how to get the test suite running in prod again
-#image_id=$(docker images -q $APP_NAME)
-#docker rmi -f $image_id || echo "there is not an existing image to delete..."
-#mvn -f ${ROOT_DIR}/pom.xml -DskipTests=true clean spring-javaformat:apply spring-boot:build-image
-#image_id=$(docker images -q $APP_NAME )
-#docker tag "${image_id}" gcr.io/${PROJECT_ID}/${APP_NAME}
-#docker push gcr.io/${PROJECT_ID}/${APP_NAME}
+# TODO figure out how to get the test suite running in prod again
+image_id=$(docker images -q $APP_NAME)
+docker rmi -f $image_id || echo "there is not an existing image to delete..."
+mvn -f ${ROOT_DIR}/pom.xml -DskipTests=true clean spring-javaformat:apply spring-boot:build-image
+image_id=$(docker images -q $APP_NAME )
+docker tag "${image_id}" gcr.io/${PROJECT_ID}/${APP_NAME}
+docker push gcr.io/${PROJECT_ID}/${APP_NAME}
 
 kubectl delete secrets ${SECRETS} || echo "could not delete ${SECRETS}."
 kubectl delete -f $APP_YAML || echo "could not delete the existing Kubernetes environment as described in ${APP_YAML}."
