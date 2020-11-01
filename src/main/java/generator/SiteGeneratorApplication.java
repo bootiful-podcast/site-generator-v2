@@ -43,6 +43,7 @@ public class SiteGeneratorApplication {
 			RabbitMqHelper rabbitMqHelper) {
 
 		log.info("installing a launch request handler integration flow...");
+		log.info("requests-queue: " + properties.getLauncher().getRequestsQueue());
 
 		var amqpInboundAdapter = Amqp //
 				.inboundAdapter(cf, properties.getLauncher().getRequestsQueue()) //

@@ -21,10 +21,6 @@ env:
   BP_API_PASSWORD: ${{ secrets.BP_API_PASSWORD }}
   BP_API_USERNAME: ${{ secrets.BP_API_USERNAME }}
 
-
-
-
-
 on:
   create:
   push:
