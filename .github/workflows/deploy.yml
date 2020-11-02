@@ -33,6 +33,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+
+
+      - name: test1
+        run: export FOB="1"
+
+      - name: test2
+        run: echo ${FOB:-nothing}
+
       - uses: actions/checkout@v2
 
       - name: Set up JDK 15
