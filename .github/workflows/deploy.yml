@@ -24,9 +24,9 @@ env:
 on:
   create:
   push:
-    branches: [ master ]
+    branches: [ master, production ]
   pull_request:
-    branches: [ master ]
+    branches: [ master , production]
 
 jobs:
   build:
