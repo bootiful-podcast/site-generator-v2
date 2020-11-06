@@ -18,7 +18,7 @@ spec:
         - envFrom:
             - secretRef:
                 name: site-generator-secrets
-          image: gcr.io/pgtm-jlong/site-generator
+          image: gcr.io/bootiful/site-generator
           imagePullPolicy: Always
           name: site-generator
           readinessProbe:

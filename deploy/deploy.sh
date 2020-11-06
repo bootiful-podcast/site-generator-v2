@@ -1,27 +1,18 @@
 #!/usr/bin/env bash
 
-BP_MODE=${1:-DEVELOPMENT}
-echo BP_MODE=${BP_MODE}
+APP_NAME=site-generator
 
-if [ "$BP_MODE" = "DEVELOPMENT" ]; then
-  echo "were using the development variables, not the production ones."
-fi
 
 GIT_URI=https://github.com/bootiful-podcast/bootiful-podcast-dev.github.io.git
 
-function read_kubernetes_secret() {
-  kubectl get secret $1 -o jsonpath="{.data.$2}" | base64 --decode
-}
+RMQ_USER=${BP_RABBITMQ_MANAGEMENT_PASSWORD}
+RMQ_PW=${BP_RABBITMQ_MANAGEMENT_USERNAME}
 
-RMQ_USER=$(read_kubernetes_secret rabbitmq-secrets RABBITMQ_DEFAULT_USER)
-RMQ_PW=$(read_kubernetes_secret rabbitmq-secrets RABBITMQ_DEFAULT_PASS)
+PSQL_USER=${BP_POSTGRES_USERNAME}
+PSQL_PW=${BP_POSTGRES_PASSWORD}
 
-PSQL_USER=$(read_kubernetes_secret postgresql-secrets POSTGRES_USER)
-PSQL_PW=$(read_kubernetes_secret postgresql-secrets POSTGRES_PASSWORD)
-
-APP_NAME=site-generator
-PROJECT_ID=${GKE_PROJECT:-pgtm-jlong}
-ROOT_DIR=${GITHUB_WORKSPACE:-$(cd $(dirname $1) && pwd)}
+PROJECT_ID=${GCLOUD_PROJECT:bootiful}
+ROOT_DIR=$(cd $(dirname $0)/.. && pwd)
 
 APP_YAML=${ROOT_DIR}/deploy/site-generator.yaml
 APP_SERVICE_YAML=${ROOT_DIR}/deploy/site-generator-service.yaml

@@ -1,22 +1,15 @@
 name: build
 
 env:
-  GKE_ZONE: ${{ secrets.GKE_ZONE }}
-  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
-  GKE_PROJECT: ${{ secrets.GKE_PROJECT }}
-  GKE_SA_KEY: ${{ secrets.GKE_SA_KEY }}
-
-  SPRING_PROFILES_ACTIVE: ci
-
-  PODCAST_RMQ_ADDRESS: ${{ secrets.PODCAST_RMQ_ADDRESS }}
-
-  GIT_URI: ${{ secrets.GIT_URI }}
+  GIT_PASSWORD: ${{ secrets.GIT_PASSWORD }}
   GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
-  GIT_PASSWORD: ${{ secrets.GIT_PASSWORD  }}
-
-  ARTIFACTORY_API_TOKEN_SECRET: ${{ secrets.ARTIFACTORY_API_TOKEN_SECRET }}
-  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME  }}
-  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD  }}
+  GIT_URI: ${{ secrets.GIT_URI }}
+  CONFIGURATION_SERVER_USERNAME: ${{ secrets.CONFIGURATION_SERVER_USERNAME }}
+  CONFIGURATION_SERVER_PASSWORD: ${{ secrets.CONFIGURATION_SERVER_PASSWORD }}
+  GCLOUD_ZONE_DEVELOPMENT: ${{ secrets.GCLOUD_ZONE_DEVELOPMENT }}
+  GCLOUD_PROJECT_DEVELOPMENT: ${{ secrets.GCLOUD_PROJECT_DEVELOPMENT }}
+  GCLOUD_SA_KEY: ${{ secrets.GCLOUD_SA_KEY }}
+  SPRING_PROFILES_ACTIVE: ci
 
   BP_API_PASSWORD: ${{ secrets.BP_API_PASSWORD }}
   BP_API_USERNAME: ${{ secrets.BP_API_USERNAME }}
@@ -24,24 +17,45 @@ env:
 on:
   create:
   push:
-    branches: [ master, production ]
+    branches: [ master ]
   pull_request:
-    branches: [ master , production]
+    branches: [ master   ]
+#
+#  Echo-On-Commit:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: "Checkout Repository"
+#        uses: actions/checkout@v2
+#
+#      - name: "Set flag from Commit"
+#        env:
+#          COMMIT_VAR: ${{ contains(github.event.head_commit.message, '[commit var]') }}
+#        run: |
+#          if ${COMMIT_VAR} == true; then
+#            echo "::set-env name=flag::true"
+#            echo "flag set to true"
+#          else
+#            echo "::set-env name=flag::false"
+#            echo "flag set to false"
+#          fi
+#
+#      - name: "Use flag if true"
+#        if: env.flag
+#        run: echo "Flag is available and true"
 
+
+#
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
 
 
-
-      - name: test1
-        run: export FOB="1"
-
-      - name: test2
-        run: echo ${FOB:-nothing}
-
       - uses: actions/checkout@v2
+
+      - name: "Setup Initial Environment"
+        run: |
+          source $GITHUB_WORKSPACE/.github/workflows/bp_mode.sh
 
       - name: Set up JDK 15
         uses: actions/setup-java@v1
@@ -54,14 +68,23 @@ jobs:
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '290.0.1'
-          service_account_key: ${{ secrets.GKE_SA_KEY }}
-          project_id: ${{ secrets.GKE_PROJECT }}
+          service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+          project_id: ${{ env.GCLOUD_PROJECT }}
 
       - run: |-
+          gcloud config set project $GCLOUD_PROJECT
           gcloud --quiet auth configure-docker
 
-      - run: |-
-          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+      - run: |
+          gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone "$GCLOUD_ZONE" --project $GCLOUD_PROJECT
+
+
+      - name: Connect to Config Server for Configuration
+        run: |
+          source $GITHUB_WORKSPACE/.github/workflows/config_client.sh
+          install_config_client_cli
+          hydrate_environment_from_config_server
+
 
       - name: Deploy Site Generator
         run: |
