@@ -2,7 +2,6 @@
 
 APP_NAME=site-generator
 
-
 GIT_URI=https://github.com/bootiful-podcast/bootiful-podcast-dev.github.io.git
 
 RMQ_USER=${BP_RABBITMQ_MANAGEMENT_PASSWORD}
