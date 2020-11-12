@@ -15,6 +15,10 @@ env:
   BP_API_USERNAME: ${{ secrets.BP_API_USERNAME }}
 
 on:
+
+  repository_dispatch:
+    types: deploy-event
+
   create:
   push:
     branches: [ master ]
