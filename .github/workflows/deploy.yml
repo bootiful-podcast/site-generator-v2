@@ -1,7 +1,7 @@
 name: build
 
 env:
-  
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
   GIT_URI: ${{ secrets.GIT_URI }}
   SPRING_PROFILES_ACTIVE: ci
   GIT_PASSWORD: ${{ secrets.GIT_PASSWORD }}
