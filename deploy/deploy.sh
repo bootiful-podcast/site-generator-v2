@@ -2,7 +2,6 @@
 
 APP_NAME=site-generator
 
-GIT_URI=https://github.com/bootiful-podcast/bootiful-podcast-dev.github.io.git
 
 RMQ_USER="${BP_RABBITMQ_MANAGEMENT_USERNAME}"
 RMQ_PW="${BP_RABBITMQ_MANAGEMENT_PASSWORD}"
@@ -48,6 +47,8 @@ stringData:
   GIT_PASSWORD: ${GIT_PASSWORD}
   BP_API_PASSWORD: ${BP_API_PASSWORD}
   BP_API_USERNAME: ${BP_API_USERNAME}
+  PODCAST_GENERATOR_API_URI: ${PODCAST_GENERATOR_API_URI}
+
 ")
 
 kubectl apply -f $APP_YAML
